@@ -1,0 +1,12 @@
+#------------------------------------------------------------------
+# spring settings
+#------------------------------------------------------------------
+spring:
+  profiles: production
+  main:
+    banner-mode: "off"
+
+logging:
+  # config: src/main/resources/log4j2-spring.xml
+  level:
+    root: error

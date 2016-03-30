@@ -1,0 +1,24 @@
+#------------------------------------------------------------------
+# spring settings
+#------------------------------------------------------------------
+spring:
+  profiles:
+    active: development
+  main:
+    # Disable embed tomcat
+    web-environment: false
+  batch:
+    job:
+      # Disable job autostart
+      enabled: false
+  datasource:
+    username: worker
+    password: worker
+    schema: test
+    url: jdbc:mysql://172.16.53.133:3357/${spring.datasource.schema}?useUnicode=yes&characterEncoding=UTF-8&autoReconnect=true&verifyServerCertificate=false&useSSL=false
+    driverClassName: com.mysql.jdbc.Driver
+  jooq:
+    sql-dialect: mysql
+
+flyway:
+  enabled: false

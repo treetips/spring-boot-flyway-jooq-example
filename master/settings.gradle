@@ -1,0 +1,2 @@
+rootProject.name = 'master'
+includeFlat "base", "batch"

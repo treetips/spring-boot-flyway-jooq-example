@@ -1,0 +1,114 @@
+apply plugin: 'application'
+
+buildscript {
+	repositories {
+		jcenter()
+		mavenCentral()
+		maven { url 'http://repo.spring.io/snapshot' }
+		maven { url 'http://repo.spring.io/milestone' }
+	}
+	dependencies {
+		classpath 'org.springframework.boot:spring-boot-gradle-plugin:' + springBootVersion
+	}
+}
+
+/**
+ * 全プロジェクト共通設定
+ */
+allprojects {
+	repositories {
+		mavenCentral()
+		maven { url 'http://repo.spring.io/snapshot' }
+		maven { url 'http://repo.spring.io/milestone' }
+	}
+}
+
+/**
+ * サブプロジェクト共通設定
+ */
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'eclipse'
+	apply plugin: 'spring-boot'
+
+	sourceCompatibility = jdkVersion
+	targetCompatibility = jdkVersion
+	[compileJava, compileTestJava]*.options*.encoding = defaultEncoding
+
+	configurations {
+		all*.exclude module: [
+			'commons-logging',
+			'log4j',
+			'slf4j-jdk12',
+			'slf4j-jdk14'
+		]
+	}
+
+	eclipse.jdt.file {
+		withProperties { properties ->
+			// コードフォーマッターの個別設定
+			def masterDir = new File(".").getAbsoluteFile().getParentFile().getParentFile().getAbsolutePath()
+			def formatter = new XmlSlurper().parse(masterDir + '/master/code-formatter.xml')
+			formatter.profile.setting.each {
+				properties.put(it.@id as String, it.@value as String)
+			}
+			// org.eclipse.jdt.ui.prefs の設定
+			File uiPreferences = project.file('.settings/org.eclipse.jdt.ui.prefs')
+			Properties uiProperties = new Properties()
+			uiProperties.setProperty('eclipse.preferences.version', '1')
+			uiProperties.setProperty('formatter_profile', '_code-formatter')
+			uiProperties.store(new FileWriter(uiPreferences), null)
+
+			File coreResourcesPrefs = project.file('.settings/org.eclipse.core.resources.prefs')
+			Properties coreResourcesProperties = new Properties()
+			coreResourcesProperties.setProperty('eclipse.preferences.version', '1')
+			coreResourcesProperties.setProperty('encoding/<project>', 'UTF-8')
+			coreResourcesProperties.store(new FileWriter(coreResourcesPrefs), null)
+
+			File coreRuntimePrefs = project.file('.settings/org.eclipse.core.runtime.prefs')
+			Properties coreRuntimeProperties = new Properties()
+			coreRuntimeProperties.setProperty('eclipse.preferences.version', '1')
+			coreRuntimeProperties.setProperty('line.separator', '\n')
+			coreRuntimeProperties.store(new FileWriter(coreRuntimePrefs), null)
+		}
+	}
+
+	task initDirs {
+		sourceSets*.java.srcDirs*.each { it.mkdirs() }
+		sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+	}
+}
+
+project(':base') {
+	dependencies {
+		compile 'org.springframework.boot:spring-boot-starter-jooq:' + springBootVersion
+
+		compile 'joda-time:joda-time:+'
+		compile 'commons-collections:commons-collections:3.2.2'
+		compile 'org.apache.commons:commons-lang3:3.4'
+		compile 'org.eclipse.collections:eclipse-collections:+'
+		compile 'org.jooq:jooq:' + jooqVersion
+		compile 'org.jooq:jooq-meta:' + jooqVersion
+		compile 'org.jooq:jooq-codegen:' + jooqVersion
+		compile 'org.flywaydb:flyway-core'
+
+		compile 'org.slf4j:jcl-over-slf4j:+'
+		compile 'org.slf4j:jul-to-slf4j:+'
+		compile 'org.slf4j:log4j-over-slf4j:+'
+		compile 'org.projectlombok:lombok:+'
+		compile 'mysql:mysql-connector-java:+'
+
+		testCompile 'junit:junit:4.12'
+		testCompile 'org.springframework.boot:spring-boot-starter-test:' + springBootVersion
+	}
+}
+
+project(':batch') {
+	dependencies {
+		compile project(':base')
+
+		compile 'org.springframework.boot:spring-boot-starter-batch:' + springBootVersion
+	}
+}
+
+task wrapper(type: Wrapper) { gradleVersion = '2.10' }

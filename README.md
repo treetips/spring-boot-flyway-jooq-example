@@ -78,6 +78,31 @@ cd master/docker/
 ./start_container.sh
 ```
 
+### MySQLの接続先を変更
+
+MySQLサーバのIPを調べます。dockerでMySQLを起動した場合は、以下でIPを確認できます。
+
+```bash
+docker-machine ip mysql
+```
+
+MySQLのportは3357ですが、変更したい場合は master/docker/docker-compose.ymlを開き、3357を任意のポートに変更して下さい。
+
+```yml
+ports:
+  - 3357:3306
+```
+
+これでMySQLのIPとportが解ったので、 batch/src/main/resources/config/application.yml を開き、以下を任意の接続情報に変更して下さい。
+
+```yml
+    url: jdbc:mysql://172.16.53.133:3357/${spring.datasource.schema}?useUnicode=yes&characterEncoding=UTF-8&autoReconnect=true&verifyServerCertificate=false&useSSL=false
+```
+
+dockerでMySQLを起動した場合は、docker-machine create 実行毎にIPが変わるため、任意に設定して下さい。
+
+### Javaの実行
+
 続いてjavaを実行します。
 
 /batch/src/main/java/com/github/treetips/GenerateMain.java を実行すると、以下の順に処理が実行されます。
